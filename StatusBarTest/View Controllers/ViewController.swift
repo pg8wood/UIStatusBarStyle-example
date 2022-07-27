@@ -25,16 +25,33 @@ class ViewController: StatusBarStylingViewController {
         modalPresentationCapturesStatusBarAppearance = true
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+    }
+
     @IBAction func didSelectPushNavigationControllerButton(_ sender: Any) {
         let navigationController = StatusBarRespectingNavigationController(rootViewController: NavStackStatusBarViewController.make())
         navigationController.navigationBar.prefersLargeTitles = true
-        present(navigationController, animated: true)
+        presentModal(navigationController)
     }
 
     @IBAction func didSelectPresentViewControllerButton(_ sender: UIButton) {
-       present(ExampleStatusBarStylingViewController.make(), animated: true)
+       presentModal(ExampleStatusBarStylingViewController.make())
     }
 
+    /// Presents a modal view vontroller and makes this view controller the presentation controller's delegate.
+    /// This allows us to respond when the modal is dismissed and refresh the preferred status bar style
+    /// to this view controller's preferred style.
+    private func presentModal(_ viewController: UIViewController) {
+        viewController.presentationController?.delegate = self
+        present(viewController, animated: true)
+    }
+}
+
+extension ViewController: UIAdaptivePresentationControllerDelegate {
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        setNeedsStatusBarAppearanceUpdate()
+    }
 }
 
 class StatusBarRespectingNavigationController: UINavigationController {
